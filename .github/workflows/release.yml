@@ -1,7 +1,7 @@
 name: Release
 on:
   push:
-    tags: ['v*-rc.*']
+    tags: ['v*']
 permissions:
   contents: write
 concurrency:
@@ -77,4 +77,6 @@ jobs:
         run: |
           test "$(jq -r .tag .release/context.json)" = "$GITHUB_REF_NAME"
           (cd dist && sha256sum *.jar *.zip > SHA256SUMS)
-          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --draft --prerelease --latest=false --title "dg-desktop $GITHUB_REF_NAME" --notes-file .release/notes.md
+          flags=(--draft --latest=false)
+          if [[ "$GITHUB_REF_NAME" == *-rc.* ]]; then flags+=(--prerelease); fi
+          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag "${flags[@]}" --title "dg-desktop $GITHUB_REF_NAME" --notes-file .release/notes.md
