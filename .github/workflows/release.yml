@@ -1,41 +1,80 @@
 name: Release
-
 on:
   push:
-    tags: ['v*']
-
+    tags: ['v*-rc.*']
 permissions:
   contents: write
-
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
-
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Build executable JAR
+      - name: Build
         run: |
           mkdir -p build dist
           javac --release 17 -d build src/Main.java
           jar --create --file "dist/dg-desktop-${GITHUB_REF_NAME}.jar" --main-class Main -C build .
-      - name: Verify executable JAR and GUI
+      - name: Test Linux GUI
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb xauth
-          jar tf "dist/dg-desktop-${GITHUB_REF_NAME}.jar" | grep -Fx 'Main.class'
-          unzip -p "dist/dg-desktop-${GITHUB_REF_NAME}.jar" META-INF/MANIFEST.MF | tr -d '\r' | grep -Fx 'Main-Class: Main'
           timeout 30s xvfb-run -a java -jar "dist/dg-desktop-${GITHUB_REF_NAME}.jar" --self-test
-      - name: Generate checksums
-        working-directory: dist
-        run: sha256sum *.jar > SHA256SUMS
-      - name: Publish release
+      - name: Package macOS application
+        if: runner.os == 'macOS'
+        run: |
+          app="build/dg-desktop.app/Contents"
+          mkdir -p "$app/MacOS" "$app/Resources"
+          cp "dist/dg-desktop-${GITHUB_REF_NAME}.jar" "$app/Resources/app.jar"
+          cat > "$app/MacOS/dg-desktop" <<'SH'
+          #!/bin/sh
+          exec /usr/bin/java -jar "$(dirname "$0")/../Resources/app.jar"
+          SH
+          chmod +x "$app/MacOS/dg-desktop"
+          cat > "$app/Info.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+          <key>CFBundleExecutable</key><string>dg-desktop</string>
+          <key>CFBundleIdentifier</key><string>test.operaton.dg-desktop</string>
+          <key>CFBundleName</key><string>dg-desktop</string>
+          <key>CFBundlePackageType</key><string>APPL</string>
+          </dict></plist>
+          PLIST
+          plutil -lint "$app/Info.plist"
+          (cd build && zip -qr "../dist/dg-desktop-${GITHUB_REF_NAME}-macos.zip" dg-desktop.app)
+          rm "dist/dg-desktop-${GITHUB_REF_NAME}.jar"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ runner.os }}
+          path: dist/*
+          retention-days: 1
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: desktop-*
+          merge-multiple: true
+          path: dist
+      - name: Checksum and publish draft
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --title "dg-desktop $GITHUB_REF_NAME" --notes "Minimal Operaton testing demo."
+        run: |
+          test "$(jq -r .tag .release/context.json)" = "$GITHUB_REF_NAME"
+          (cd dist && sha256sum *.jar *.zip > SHA256SUMS)
+          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --draft --prerelease --latest=false --title "dg-desktop $GITHUB_REF_NAME" --notes-file .release/notes.md

@@ -17,11 +17,8 @@ A graphical desktop is required. CI tests the GUI using Xvfb.
 
 ## Release
 
-```sh
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-Tag pushes matching `v*` run the Release workflow, which builds and tests the
-executable JAR and publishes it with `SHA256SUMS` in a GitHub release.
+Operaton prepares `release/<version>` and `.release/notes.md`. Tags matching
+`v*-rc.*` build a JAR on Linux and an unsigned `.app` ZIP on macOS, then create
+a draft prerelease with `SHA256SUMS`, never latest. The macOS app also requires
+Java 17; it is not signed or notarized. Final releases reuse RC assets without rebuilding.
 Verify downloaded assets with `sha256sum -c SHA256SUMS`.
