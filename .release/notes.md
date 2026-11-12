@@ -1,3 +1,4 @@
-Release candidate for 0.6.1.
+## Commits
 
-Commit notes are generated automatically after successful build verification.
+- Initialize demo patch 0.6.1 (4bec739)
+- Prepare demo candidate v0.6.1-rc.0 (b492e6a)
