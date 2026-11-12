@@ -2,6 +2,8 @@
   "version": "0.3.0",
   "instance": "960a58cf-de7b-11f1-95ba-f265c5c1e378",
   "baseSha": "c746f0d2f7d96d36b5d7edb5414ecc4db2a00a4e",
-  "task": "6b664051-de7c-11f1-95ba-f265c5c1e378",
-  "tag": "v0.3.0-rc.0"
+  "task": "ffb133ce-de7c-11f1-95ba-f265c5c1e378",
+  "tag": "v0.3.0",
+  "sourceRc": "v0.3.0-rc.0",
+  "sourceSha": "e50f209e85262404be5c51de9fc238b2ddd4290c"
 }
