@@ -9,6 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
+    if: contains(github.ref_name, '-rc.')
     strategy:
       fail-fast: false
       matrix:
@@ -60,8 +61,10 @@ jobs:
         with:
           name: desktop-${{ runner.os }}
           path: dist/*
-          retention-days: 1
+          if-no-files-found: error
+          retention-days: 14
   release:
+    if: contains(github.ref_name, '-rc.')
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -71,12 +74,19 @@ jobs:
           pattern: desktop-*
           merge-multiple: true
           path: dist
-      - name: Checksum and publish draft
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-payloads
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
+  promote:
+    if: ${{ !contains(github.ref_name, '-rc.') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Promote approved RC bytes (never build)
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          test "$(jq -r .tag .release/context.json)" = "$GITHUB_REF_NAME"
-          (cd dist && sha256sum *.jar *.zip > SHA256SUMS)
-          flags=(--draft --latest=false)
-          if [[ "$GITHUB_REF_NAME" == *-rc.* ]]; then flags+=(--prerelease); fi
-          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag "${flags[@]}" --title "dg-desktop $GITHUB_REF_NAME" --notes-file .release/notes.md
+        run: python3 .github/scripts/promote.py
