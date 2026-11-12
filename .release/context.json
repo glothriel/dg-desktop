@@ -2,6 +2,29 @@
   "version": "0.7.0",
   "instance": "8965bef3-decb-11f1-9f5e-ae2e6755a954",
   "baseSha": "d30228b578ad27a85ca30d15c3c90792afa9d91f",
-  "task": "0a33d669-decc-11f1-9f5e-ae2e6755a954",
-  "tag": "v0.7.0-rc.0"
+  "task": "53c3235a-decf-11f1-9f5e-ae2e6755a954",
+  "tag": "v0.7.0",
+  "projectId": "desktop",
+  "repository": "glothriel/dg-desktop",
+  "catalogSha256": "54f3507a45e43b52dbe06890a34c93160dac7ea710fbab7bfb5f1b151ca30a97",
+  "sourceRc": "v0.7.0-rc.0",
+  "payloads": [
+    {
+      "payloadId": "jar",
+      "sourceName": "dg-desktop-v0.7.0-rc.0.jar",
+      "name": "dg-desktop-v0.7.0.jar",
+      "sha256": "dcbf6625e14fbc360ab794db3cbefa7b19a3a42dd5ef7db772f847f5bc69f173",
+      "size": 1615,
+      "signing": "none"
+    },
+    {
+      "payloadId": "macos",
+      "sourceName": "dg-desktop-v0.7.0-rc.0-macos.zip",
+      "name": "dg-desktop-v0.7.0-macos.zip",
+      "sha256": "a006f17b617066b40eb1fcc810841f8674ea7dfb0ac4af22aecd351fce2d9748",
+      "size": 3113,
+      "signing": "gpg"
+    }
+  ],
+  "sourceSha": "a6841bd30ae01cf8fabd69f1af7fb996519fb1f8"
 }
