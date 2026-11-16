@@ -1,5 +1,7 @@
 {
   "version": "0.10.0",
   "instance": "2802d210-e19b-11f1-9841-cab1cc76ae7f",
-  "baseSha": "d30228b578ad27a85ca30d15c3c90792afa9d91f"
+  "baseSha": "d30228b578ad27a85ca30d15c3c90792afa9d91f",
+  "task": "990fdc88-e19b-11f1-9841-cab1cc76ae7f",
+  "tag": "v0.10.0-rc.0"
 }
