@@ -17,9 +17,10 @@ A graphical desktop is required. CI tests the GUI using Xvfb.
 
 ## Release
 
-Operaton prepares `release/<version>` and `.release/notes.md`. Tags matching
-`v*` build a JAR on Linux and an unsigned `.app` ZIP on macOS, then create
-a draft with `SHA256SUMS`. RCs are prereleases, never latest. Final tags rebuild
-approved code; Operaton publishes successful final builds as latest.
+Operaton prepares `release/<version>` and `.release/notes.md`. RC tags build a
+JAR on Linux and an unsigned `.app` ZIP on macOS, then upload the combined
+`release-payloads` Actions artifact. Operaton verifies the bytes and publishes an
+RC prerelease with `SHA256SUMS`, never latest. Final tags copy the approved RC
+bytes into a draft without rebuilding; Operaton verifies and publishes the final.
 The macOS app also requires Java 17; it is not signed or notarized.
 Verify downloaded assets with `sha256sum -c SHA256SUMS`.
